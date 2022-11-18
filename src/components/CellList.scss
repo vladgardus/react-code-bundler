@@ -1,0 +1,9 @@
+.cell-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.react-draggable-transparent-selection .cell-list-wrapper {
+    margin-bottom: 100vh;
+}

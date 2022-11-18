@@ -1,15 +1,20 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import "./pollyfils.ts";
+import "primeicons/primeicons.css";
+import { AppProvider } from "./hooks/useApp";
+import { CellsProvider } from "./hooks/useCells";
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
 root.render(
   // <React.StrictMode>
-    <App />
+  <AppProvider>
+    <CellsProvider>
+      <App />
+    </CellsProvider>
+  </AppProvider>
   // </React.StrictMode>
 );
 

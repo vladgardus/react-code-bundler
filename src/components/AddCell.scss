@@ -1,0 +1,30 @@
+.add-cell-wrapper {
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.3s ease-in 0.1s;
+  margin: 0.5rem 0;
+  &:last-child {
+    opacity: 1;
+  }
+  &:hover {
+    opacity: 1;
+  }
+  .divider {
+    position: absolute;
+    top: 50%;
+    bottom: 50%;
+    border-bottom: 1px solid gray;
+    width: calc(100% - 4rem);
+    left: 2rem;
+    right: 2rem;
+    z-index: -1;
+  }
+  .add-buttons {
+    display: flex;
+    justify-content: center;
+    button {
+      margin: 0 1.5rem;
+      gap: 0.5rem;
+    }
+  }
+}

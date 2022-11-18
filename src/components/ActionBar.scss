@@ -1,0 +1,23 @@
+.action-bar-wrapper {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 100;
+  button {
+    background-color: #f48771;
+    border: 0;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+    &:hover {
+      opacity: 1;
+    }
+    i {
+      color: white;
+    }
+  }
+}

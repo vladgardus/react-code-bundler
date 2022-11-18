@@ -1,0 +1,78 @@
+$string-color: #ce9178;
+$language-keyword-color: #619ac3;
+$global-variable-color: #dcdcaa;
+$normal-text-color: #9cdcfe;
+$grammar-color: #d4d4d4;
+$jsx-tag-symbol-color: #002b49;
+$jsx-tag-color: #525229;
+$jsx-attribute-color: #55bb8a;
+$jsx-text-color: #a0a0a0;
+$unused-opacity: 0.4;
+
+.editor-wrapper {
+  position: relative;
+  height: 100%;
+  width: calc(100% - 10px);
+  .button-format {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  &:hover .button-format {
+    opacity: 1;
+  }
+
+  .editor {
+    p {
+      color: $string-color !important;
+    }
+    .mtk9 {
+      color: $grammar-color;
+    }
+    .mtk1 {
+      color: $normal-text-color;
+    }
+    .mtk22 {
+      color: $global-variable-color;
+    }
+    .mtk8 {
+      color: $language-keyword-color;
+    }
+    .mtk5 {
+      color: $string-color;
+    }
+    .monaco-editor.showUnused .squiggly-inline-unnecessary {
+      opacity: $unused-opacity;
+    }
+    .jsx-expression-braces {
+      color: #f1908c;
+    }
+    .jsx-tag-angle-bracket {
+      &.jsx-tag-order-1 {
+        color: #12a182;
+      }
+
+      &.jsx-tag-order-2 {
+        color: #4e7ca1;
+      }
+
+      &.jsx-tag-order-3 {
+        color: #fb8b05;
+      }
+
+      color: $jsx-tag-symbol-color;
+    }
+    .jsx-tag-name {
+      color: $jsx-tag-color;
+    }
+    .jsx-tag-attribute-key {
+      color: $jsx-attribute-color;
+    }
+    .jsx-text {
+      color: $jsx-text-color;
+    }
+  }
+}
