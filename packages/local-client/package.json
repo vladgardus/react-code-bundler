@@ -22,6 +22,7 @@
     "esbuild-wasm": "^0.15.13",
     "icons": "^1.0.0",
     "localforage": "^1.10.0",
+    "lodash": "^4.17.21",
     "monaco-jsx-syntax-highlight": "^1.2.0",
     "prettier": "^2.7.1",
     "primereact": "^8.7.2",
@@ -58,6 +59,7 @@
     ]
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.189",
     "sass": "^1.56.1",
     "typescript": "^4.8.4"
   }

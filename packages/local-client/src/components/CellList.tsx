@@ -1,5 +1,5 @@
 import { useCells } from "../hooks/useCells";
-import { Fragment, useMemo } from "react";
+import { Fragment, useEffect, useMemo } from "react";
 import CellListItem from "./CellListitem";
 import "./CellList.scss";
 import AddCell from "./AddCell";
@@ -8,10 +8,14 @@ interface CellListProps {
 }
 
 const CellList: React.FC<CellListProps> = () => {
-  const { state } = useCells();
+  const { state, fetchCells } = useCells();
   const cells = useMemo(() => {
     return state.order.map((id) => state.data[id]);
   }, [state.data, state.order]);
+
+  useEffect(() => {
+    fetchCells();
+  }, []);
 
   return (
     <div className='cell-list-wrapper'>

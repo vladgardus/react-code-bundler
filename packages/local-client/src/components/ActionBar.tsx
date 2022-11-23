@@ -1,4 +1,5 @@
-import { CellsActions, useCells } from "../hooks/useCells";
+import { CellsActions } from "../state/actions/CellActions";
+import { useCells } from "../hooks/useCells";
 import "./ActionBar.scss";
 
 interface ActionBarProps {

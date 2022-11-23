@@ -4,9 +4,10 @@ import CodePreview from "./CodePreview";
 import Resizable from "./Resizable";
 import "./CodeCell.scss";
 import { Cell } from "../model/Cell";
-import { CellsActions, useCells } from "../hooks/useCells";
+import { useCells } from "../hooks/useCells";
 import { SpinnerDotted } from "spinners-react";
 import { useCumulativeCode } from "../hooks/useCumulativeCode";
+import { CellsActions } from "../state/actions/CellActions";
 
 interface CodeCellProps {
   cell: Cell;

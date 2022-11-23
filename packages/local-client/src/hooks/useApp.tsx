@@ -1,16 +1,12 @@
 import { SpinnerDotted } from "spinners-react";
 import React, { createContext, Dispatch, useEffect, useRef } from "react";
 import { Toast, ToastMessageType } from "primereact/toast";
-
-enum AppActions {
-  SHOW_LOADING_SPINNER = "SHOW_LOADING_SPINNER",
-  HIDE_LOADING_SPINNER = "HIDE_LOADING_SPINNER",
-  SET_MOBILE = "SET_MOBILE",
-}
+import { AppActions, AppActionTypes } from "../state/actions/AppActions";
+import { appReducer } from "../state/reducers/AppReducer";
 
 interface AppContextState {
   state: typeof appInitialState;
-  dispatch: Dispatch<{ type: AppActions; payload: any }>;
+  dispatch: Dispatch<AppActionTypes>;
   showToastMessage: (message: ToastMessageType) => void;
 }
 const AppContext = createContext({} as AppContextState);
@@ -19,24 +15,6 @@ let appInitialState = {
   loadingSpinnerEnabled: false,
   isMobile: false,
 };
-
-function appReducer(state: any, action: { type: AppActions; payload: any }) {
-  switch (action.type) {
-    case AppActions.SHOW_LOADING_SPINNER: {
-      return { ...state, loadingSpinnerEnabled: true };
-    }
-    case AppActions.HIDE_LOADING_SPINNER: {
-      return { ...state, loadingSpinnerEnabled: false };
-    }
-    case AppActions.SET_MOBILE: {
-      const { isMobile } = action.payload;
-      return { ...state, isMobile };
-    }
-    default: {
-      throw new Error(`Unhandled action type: ${action.type}`);
-    }
-  }
-}
 
 function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = React.useReducer(appReducer, appInitialState);

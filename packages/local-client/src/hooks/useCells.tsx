@@ -1,155 +1,75 @@
 import React, { createContext, Dispatch, useCallback } from "react";
 import { Cell } from "../model/Cell";
-import { v4 as uuid } from "uuid";
 import bundler from "../bundler";
+import { CellActionTypes, CellsActions } from "../state/actions/CellActions";
+import { cellsReducer } from "../state/reducers/CellReducer";
+import axios from "axios";
+import { useApp } from "./useApp";
+import { AppActions } from "../state/actions/AppActions";
+import { beforeStateChangeMiddlewares, afterStateChangeMiddlewares } from "../state/middlewares";
+import { useReducerWithMiddleware } from "./useReducerWithMiddleware";
+import { BaseInitialState } from "../state/BaseInitialState";
 
-export enum CellsActions {
-  MOVE_CELL = "MOVE_CELL",
-  DELETE_CELL = "DELETE_CELL",
-  INSERT_CELL_BEFORE = "INSERT_CELL_BEFORE",
-  INSERT_CELL_AFTER = "INSERT_CELL_AFTER",
-  UPDATE_CELL = "UPDATE_CELL",
-  BUNDLE_START = "BUNDLE_START",
-  BUNDLE_COMPLETE = "BUNDLE_COMPLETE",
-}
-
-let cellsInitialState: {
+export interface CellsInitialState extends BaseInitialState<CellActionTypes> {
   data: { [key: string]: Cell };
+  error: string;
   order: string[];
   bundles: { [key: string]: { loading: boolean; code: string; err: string } | undefined };
-} = {
+}
+
+export let cellsInitialState: CellsInitialState = {
   data: {},
+  error: "",
   order: [],
   bundles: {},
 };
-interface CellsContextState {
-  state: typeof cellsInitialState;
-  dispatch: Dispatch<ActionTypes>;
+export interface CellsContextState {
+  state: CellsInitialState;
+  dispatch: Dispatch<CellActionTypes>;
   createBundle: (id: string, input: string) => void;
+  fetchCells: () => void;
+  saveCells: () => void;
 }
-interface BaseAction {
-  type: CellsActions;
-  payload: { id: Cell["id"] };
-}
-export interface MoveCellAction extends BaseAction {
-  type: CellsActions.MOVE_CELL;
-  payload: BaseAction["payload"] & { direction: "up" | "down" };
-}
-export interface DeleteCellAction extends BaseAction {
-  type: CellsActions.DELETE_CELL;
-}
-export interface InsertCellBeforeAction {
-  type: CellsActions.INSERT_CELL_BEFORE;
-  payload: { id: string | null; type: Cell["type"] };
-}
-export interface InsertCellAfterAction {
-  type: CellsActions.INSERT_CELL_AFTER;
-  payload: { id: string | null; type: Cell["type"] };
-}
-export interface UpdateCellAction extends BaseAction {
-  type: CellsActions.UPDATE_CELL;
-  payload: BaseAction["payload"] & {
-    content: Cell["content"];
-  };
-}
-export interface BundleStartAction extends BaseAction {
-  type: CellsActions.BUNDLE_START;
-}
-export interface BundleCompleteAction extends BaseAction {
-  type: CellsActions.BUNDLE_COMPLETE;
-  payload: BaseAction["payload"] & {
-    bundle: { code: string; err: string };
-  };
-}
-
-export type ActionTypes = MoveCellAction | DeleteCellAction | InsertCellBeforeAction | InsertCellAfterAction | UpdateCellAction | BundleStartAction | BundleCompleteAction;
 
 const CellsContext = createContext({} as CellsContextState);
 
-function cellsReducer(state: typeof cellsInitialState, action: ActionTypes) {
-  switch (action.type) {
-    case CellsActions.MOVE_CELL: {
-      const { id, direction } = action.payload;
-      const index = state.order.findIndex((item) => item === id);
-      const targetIndex = direction === "up" ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex > state.order.length - 1) return state;
-      const newOrder = [...state.order];
-      newOrder[index] = newOrder[targetIndex];
-      newOrder[targetIndex] = id;
-      return { ...state, order: newOrder };
-    }
-    case CellsActions.DELETE_CELL: {
-      const { id } = action.payload;
-      let newData = { ...state.data };
-      delete newData[id];
-      return { ...state, data: newData, order: [...state.order.filter((item) => item !== id)] };
-    }
-    case CellsActions.UPDATE_CELL: {
-      const { id, content } = action.payload;
-      return { ...state, data: { ...state.data, [id]: { ...state.data[id], content } } };
-    }
-    case CellsActions.INSERT_CELL_BEFORE: {
-      const { id, type } = action.payload;
-      const cell: Cell = {
-        content: "",
-        type: type,
-        id: uuid(),
-      };
-      let index = state.order.findIndex((item) => item === id);
-      let newOrder = [...state.order];
-      if (index < 0) {
-        newOrder.push(cell.id);
-      } else {
-        newOrder.splice(index, 0, cell.id);
-      }
-      return { ...state, data: { ...state.data, [cell.id]: cell }, order: [...newOrder] };
-    }
-    case CellsActions.INSERT_CELL_AFTER: {
-      const { id, type } = action.payload;
-      const cell: Cell = {
-        content: "",
-        type: type,
-        id: uuid(),
-      };
-      let index = state.order.findIndex((item) => item === id);
-      let newOrder = [...state.order];
-      if (index < 0) {
-        newOrder.unshift(cell.id);
-      } else {
-        newOrder.splice(index + 1, 0, cell.id);
-      }
-      return { ...state, data: { ...state.data, [cell.id]: cell }, order: [...newOrder] };
-    }
-    case CellsActions.BUNDLE_START: {
-      const { id } = action.payload;
-      return { ...state, bundles: { ...state.bundles, [id]: { loading: true, code: "", err: "" } } };
-    }
-    case CellsActions.BUNDLE_COMPLETE: {
-      const {
-        id,
-        bundle: { code, err },
-      } = action.payload;
-      return { ...state, bundles: { ...state.bundles, [id]: { loading: false, code, err } } };
-    }
-    default: {
-      return state;
-    }
-  }
-}
-
 function CellsProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = React.useReducer(cellsReducer, cellsInitialState);
+  const { state, dispatch } = useReducerWithMiddleware<CellsInitialState, CellActionTypes>(cellsReducer, cellsInitialState, beforeStateChangeMiddlewares, afterStateChangeMiddlewares);
+  const appContext = useApp();
+  const createBundle = useCallback(async (id: string, input: string) => {
+    dispatch({ type: CellsActions.BUNDLE_START, payload: { id } });
+    let bundle = await bundler(input);
+    dispatch({ type: CellsActions.BUNDLE_COMPLETE, payload: { id, bundle } });
+  }, []);
 
-  const createBundle = useCallback(
-    async (id: string, input: string) => {
-      dispatch({ type: CellsActions.BUNDLE_START, payload: { id } });
-      let bundle = await bundler(input);
-      dispatch({ type: CellsActions.BUNDLE_COMPLETE, payload: { id, bundle } });
-    },
-    [dispatch]
-  );
+  const fetchCells = useCallback(async () => {
+    dispatch({ type: CellsActions.FETCH_CELLS });
+    appContext.dispatch({ type: AppActions.SHOW_LOADING_SPINNER });
+    try {
+      const { data } = await axios.get<Cell[]>("/cells");
+      dispatch({ type: CellsActions.FETCH_CELLS_COMPLETE, payload: data });
+      appContext.dispatch({ type: AppActions.HIDE_LOADING_SPINNER });
+    } catch (err) {
+      if (err instanceof Error) {
+        dispatch({ type: CellsActions.FETCH_CELLS_ERROR, payload: err.message });
+      }
+      appContext.dispatch({ type: AppActions.HIDE_LOADING_SPINNER });
+    }
+  }, [appContext]);
 
-  const value = { state, dispatch, createBundle };
+  const saveCells = useCallback(async () => {
+    try {
+      const { data, order } = state;
+      const cells = order.map((id) => data[id]);
+      await axios.post("/cells", { cells });
+    } catch (err) {
+      if (err instanceof Error) {
+        dispatch({ type: CellsActions.SAVE_CELLS_ERROR, payload: err.message });
+      }
+    }
+  }, [state]);
+
+  const value = { state, dispatch, createBundle, fetchCells, saveCells };
 
   return <CellsContext.Provider value={value}>{children}</CellsContext.Provider>;
 }
