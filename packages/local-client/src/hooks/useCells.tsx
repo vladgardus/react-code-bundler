@@ -36,26 +36,29 @@ const CellsContext = createContext({} as CellsContextState);
 function CellsProvider({ children }: { children: React.ReactNode }) {
   const { state, dispatch } = useReducerWithMiddleware<CellsInitialState, CellActionTypes>(cellsReducer, cellsInitialState, beforeStateChangeMiddlewares, afterStateChangeMiddlewares);
   const appContext = useApp();
+  const appDispatch = appContext.dispatch;
   const createBundle = useCallback(async (id: string, input: string) => {
     dispatch({ type: CellsActions.BUNDLE_START, payload: { id } });
     let bundle = await bundler(input);
     dispatch({ type: CellsActions.BUNDLE_COMPLETE, payload: { id, bundle } });
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCells = useCallback(async () => {
     dispatch({ type: CellsActions.FETCH_CELLS });
-    appContext.dispatch({ type: AppActions.SHOW_LOADING_SPINNER });
+    appDispatch({ type: AppActions.SHOW_LOADING_SPINNER });
     try {
       const { data } = await axios.get<Cell[]>("/cells");
       dispatch({ type: CellsActions.FETCH_CELLS_COMPLETE, payload: data });
-      appContext.dispatch({ type: AppActions.HIDE_LOADING_SPINNER });
+      appDispatch({ type: AppActions.HIDE_LOADING_SPINNER });
     } catch (err) {
       if (err instanceof Error) {
         dispatch({ type: CellsActions.FETCH_CELLS_ERROR, payload: err.message });
       }
-      appContext.dispatch({ type: AppActions.HIDE_LOADING_SPINNER });
+      appDispatch({ type: AppActions.HIDE_LOADING_SPINNER });
     }
-  }, [appContext]);
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appDispatch]);
 
   const saveCells = useCallback(async () => {
     try {
@@ -67,6 +70,7 @@ function CellsProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: CellsActions.SAVE_CELLS_ERROR, payload: err.message });
       }
     }
+    //eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   const value = { state, dispatch, createBundle, fetchCells, saveCells };

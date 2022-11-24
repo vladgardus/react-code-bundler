@@ -15,7 +15,7 @@ const CellList: React.FC<CellListProps> = () => {
 
   useEffect(() => {
     fetchCells();
-  }, []);
+  }, [fetchCells]);
 
   return (
     <div className='cell-list-wrapper'>

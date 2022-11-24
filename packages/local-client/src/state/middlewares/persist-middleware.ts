@@ -14,7 +14,6 @@ function isInAcceptedTypes(action: CellActionTypes): action is AcceptedTypes {
 const postCells = (cells: Cell[]) => {
   return _debounce(() => axios.post("/cells", { cells }), 350);
 };
-
 let lastCall: DebouncedFunc<() => Promise<AxiosResponse<any, any>>>;
 
 export const persistMiddleware = async (state: CellsInitialState) => {
